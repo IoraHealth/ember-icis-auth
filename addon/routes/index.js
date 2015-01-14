@@ -16,10 +16,8 @@ export default Ember.Route.extend({
   model: function() {
     var _this = this;
     var meUrl = this.get('snowflake_url') + "/api/v1/me.json?access_token=" + this.get('token');
-    var me = Ember.$.getJSON(meUrl);
-
-    me.fail(function() {
-      OAuth.redirect(_this.get('snowflake_provider'), 'auth')
+    var me = Ember.$.getJSON(meUrl).fail(function() {
+      OAuth.redirect(_this.get('snowflake_provider'), 'auth');
     });
 
     return me;
