@@ -14,16 +14,8 @@ a valid token.
 
 ## Installation
 
-In your Ember-CLI app:
-```js
-// package.json
-"devDependencies" :{
-  "ember-icis-auth": "git+ssh://git@github.com:iorahealth/ember-icis-auth.git#0.1.0"
-}
-```
-Then run:
-
 ```sh
+npm install --save-dev ember-icis-auth
 ember g ember-icis-auth
 ```
 
@@ -91,7 +83,7 @@ In the CLI app you are building first lower the requirement for the widget lib:
 ```js
 //package.json
 "devDependencies": {
-  //"ember-icis-auth": "git+ssh://git@github.com:iorahealth/ember-icis-auth.git#0.1.0"
+  //"ember-icis-auth": "~ 0.1.0"
   "ember-icis-auth": "*"
 }
 ```
