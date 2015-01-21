@@ -4,6 +4,7 @@ export default Ember.Route.extend({
   token: localStorage['access_token'],
   snowflake_provider: 'CHANGEME',
   snowflake_url: 'CHANGEME',
+  practice_id: localStorage['practice_id'],
 
   beforeModel: function() {
     var token = this.get('token')
@@ -14,12 +15,28 @@ export default Ember.Route.extend({
   },
 
   model: function() {
-    var _this = this;
-    var meUrl = this.get('snowflake_url') + "/api/v1/me.json?access_token=" + this.get('token');
-    var me = Ember.$.getJSON(meUrl).fail(function() {
-      OAuth.redirect(_this.get('snowflake_provider'), 'auth');
-    });
+    return this.store.find('current-user', 'me');
+  },
 
-    return me;
+  setupContoller: function(controller, model) {
+    this._super(controller, model);
+    this.set('user', model);
+    this.set('practiceUser', this._getPracticeUser(model, this.get('practice_id')));
+    controller.set('practiceUser', this._getPracticeUser(model, this.get('practice_id')));
+  },
+
+
+  _getPracticeUser: function(currentUser, practiceId) {
+    if (practiceId) {
+      return currentUser.practiceUserByPracticeId(practiceId);
+    } else {
+      return currentUser.get('defaultPracticeUser');
+    }
+  },
+
+  actions: {
+    error: function(error, transition) {
+      OAuth.redirect(this.get('snowflake_provider'), 'auth');
+    }
   }
 });

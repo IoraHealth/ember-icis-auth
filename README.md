@@ -11,6 +11,8 @@ access token so that our model layer can interact with our services.
 that will also set your access token, skipping OAuth. The idea behind this is
 that you are likely going to one of these applications from one that already has
 a valid token.
+* Provides current-user and current-practice-user models, which will get the ME
+json from Snowflake and provide you with some necessary authentication information.
 
 ## Installation
 
@@ -67,7 +69,6 @@ Router.map(function() {
   this.route("token");
 });
 ```
-
 
 ## Running Tests
 
