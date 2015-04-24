@@ -61,6 +61,17 @@ export default Auth.reopen({
 });
 ```
 
+Set up the store adapter for the current-user model:
+```js
+//app/adapters/current-user.js
+import CurrentUser from 'ember-icis-auth/adapters/current-user';
+import config from 'notes-dash/config/environment';
+
+export default CurrentUser.reopen({
+  host: config.APP.SNOWFLAKE_URI
+});
+```
+
 And finally setup the basic routing:
 ```js
 //app/router.js
