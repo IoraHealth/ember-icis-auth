@@ -3,7 +3,8 @@
     "document",
     "window",
     "-Promise",
-    "OAuth"
+    "OAuth",
+    "localStorage"
   ],
   "browser": true,
   "boss": true,
