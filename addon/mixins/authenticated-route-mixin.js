@@ -11,7 +11,7 @@ export default Ember.Mixin.create({
 
     var token = this.get('token');
     if(!token) {
-      OAuth.redirect(this.get('snowflake_provider'), 'auth');
+      this._authenticate();
     }
 
     return superResult;
@@ -28,6 +28,9 @@ export default Ember.Mixin.create({
     controller.set('practiceUser', this._getPracticeUser(model, this.get('practice_id')));
   },
 
+  _authenticate: function() {
+    return OAuth.redirect(this.get('snowflake_provider'), 'auth');
+  },
 
   _getPracticeUser: function(currentUser, practiceId) {
     if (practiceId) {
@@ -39,7 +42,7 @@ export default Ember.Mixin.create({
 
   actions: {
     error: function() {
-      OAuth.redirect(this.get('snowflake_provider'), 'auth');
+      this._authenticate();
     }
   }
 });
