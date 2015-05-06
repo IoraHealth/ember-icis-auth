@@ -35,7 +35,7 @@ export default Ember.Route.extend({
   },
 
   actions: {
-    error: function(error, transition) {
+    error: function() {
       OAuth.redirect(this.get('snowflake_provider'), 'auth');
     }
   }
