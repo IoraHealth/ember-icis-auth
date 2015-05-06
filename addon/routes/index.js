@@ -7,10 +7,10 @@ export default Ember.Route.extend({
   practice_id: localStorage['practice_id'],
 
   beforeModel: function() {
-    var token = this.get('token')
+    var token = this.get('token');
 
     if(!token) {
-      OAuth.redirect(this.get('snowflake_provider'), 'auth')
+      OAuth.redirect(this.get('snowflake_provider'), 'auth');
     }
   },
 
