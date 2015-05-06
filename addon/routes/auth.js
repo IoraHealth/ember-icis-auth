@@ -7,7 +7,7 @@ export default Ember.Route.extend({
     var _this = this;
 
     OAuth.callback(this.get('snowflake_provider')).done(function(result) {
-      localStorage['access_token'] = result.access_token
+      localStorage['access_token'] = result.access_token;
       _this.transitionTo('index');
     });
   }

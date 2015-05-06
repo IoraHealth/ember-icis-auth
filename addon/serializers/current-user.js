@@ -9,7 +9,7 @@ export default DS.ActiveModelSerializer.extend({
         practiceUserUids = [];
 
     practiceUsers.forEach(function(practiceUser) {
-      practiceUserUids.push(practiceUser.uid)
+      practiceUserUids.push(practiceUser.uid);
     });
 
     payload.current_practice_user_uids = practiceUserUids;
