@@ -22,6 +22,13 @@ export default Ember.Mixin.create({
           _this.set('practiceUser', _this._getPracticeUser(currentUser, _this.get('practice_id')));
 
           return Ember.RSVP.resolve(currentUser);
+        },
+
+        function(e) {
+          if(e.status === 401) {
+            _this.authenticate();
+          }
+          return Ember.RSVP.reject(e);
         }
       );
     }
@@ -46,12 +53,6 @@ export default Ember.Mixin.create({
       return currentUser.practiceUserByPracticeId(practiceId);
     } else {
       return currentUser.get('defaultPracticeUser');
-    }
-  },
-
-  actions: {
-    error: function() {
-      this._authenticate();
     }
   }
 });
