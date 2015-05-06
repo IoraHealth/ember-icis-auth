@@ -18,7 +18,7 @@ export default Ember.Route.extend({
     return this.store.find('current-user', 'me');
   },
 
-  setupContoller: function(controller, model) {
+  setupController: function(controller, model) {
     this._super(controller, model);
     this.set('user', model);
     this.set('practiceUser', this._getPracticeUser(model, this.get('practice_id')));
