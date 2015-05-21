@@ -81,6 +81,28 @@ Router.map(function() {
 });
 ```
 
+### Transitioning to other routes after auth
+
+The default behavior in the auth route transitions to the app's index after
+successful authentication. You may wish to implement other logic, and the auth
+route makes it easy to do so using the transitionToTargetRoute callback.
+
+```js
+//app/routes/auth.js
+import Auth from 'ember-icis-auth/routes/auth'
+import config from 'notes-dash/config/environment'
+
+export default Auth.reopen({
+  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER,
+
+  transitionToTargetRoute: function(transition) {
+    console.log("We're authenticated now!");
+    this._super(transition);
+  }
+});
+```
+
+
 ## Running Tests
 
 * `ember test`
