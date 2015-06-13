@@ -41,24 +41,12 @@ export default {
 };
 ```
 
-Set the specific route configs:
+Set the specific configs:
 ```js
-//app/routes/index.js
-import config from 'notes-dash/config/environment';
-import Index from 'ember-icis-auth/routes/index';
-
-export default Index.reopen({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER,
-  snowflake_url: config.APP.SNOWFLAKE_URI
-});
-
-//app/routes/auth.js
-import Auth from 'ember-icis-auth/routes/auth'
-import config from 'notes-dash/config/environment'
-
-export default Auth.reopen({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER
-});
+ENV['ember-icis-auth'] = {
+  snowflakeProvider: '..',
+  snowflakeUrl: '..'
+};
 ```
 
 Set up the store adapter for the current-user model:
