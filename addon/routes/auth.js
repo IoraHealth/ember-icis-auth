@@ -5,14 +5,12 @@ export default Ember.Route.extend({
 
   beforeModel: function(transition) {
     var _this = this;
-
-    OAuth.callback(this.get('snowflake_provider')).done(function(result) {
-      localStorage['access_token'] = result.access_token;
+    return this.authenticator.callback().done(function() {
       _this.transitionToTargetRoute(transition);
     });
   },
 
-  transitionToTargetRoute: function(transition) {
+  transitionToTargetRoute: function() {
     this.transitionTo('index');
   }
 });
