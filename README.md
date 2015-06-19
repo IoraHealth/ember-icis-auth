@@ -41,6 +41,54 @@ export default {
 };
 ```
 
+Create authenticator service, and optionally a test double service:
+```js
+//app/services/authenticator.js
+import authenticator from 'ember-icis-auth/services/authenticator';
+import config from 'notes-dash/config/environment';
+
+export default authenticator.extend({
+  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER
+});
+
+//app/services/test-authenticator.js
+import authenticator from 'ember-icis-auth/services/test-authenticator';
+import config from 'notes-dash/config/environment';
+
+export default authenticator.extend({
+  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER
+});
+```
+
+Create an Authenticator initializer:
+```js
+//app/initializer/authenticator.js
+import config from 'notes-dash/config/environment';
+
+export function initialize(container, application) {
+  var service;
+  if (config.environment === 'test') {
+    // use provided test double in test environment
+    service = 'service:test-authenticator';
+  } else {
+    service = 'service:authenticator';
+  }
+
+  // injects dependency into all routes
+  application.inject('route', 'authenticator', service);
+
+  // Alternatively you can inject the authenticator into only routes which need
+  // to access it, (for example the auth route, routes with include the
+  // AuthenticatedRouteMixin, routes with custom auth logic):
+  // application.inject('route:some-authenticated-route', 'authenticator', service);
+}
+
+export default {
+  name: 'authenticator',
+  initialize: initialize
+};
+```
+
 Set the specific route configs:
 ```js
 //app/routes/index.js

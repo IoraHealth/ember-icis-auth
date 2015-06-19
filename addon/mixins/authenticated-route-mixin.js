@@ -11,7 +11,7 @@ export default Ember.Mixin.create({
 
     var token = this.get('token');
     if(!token) {
-      this._authenticate();
+      this.authenticator.authenticate();
     } else {
       var _this = this;
 
@@ -26,7 +26,7 @@ export default Ember.Mixin.create({
 
         function(e) {
           if(e.status === 401) {
-            _this._authenticate();
+            _this.authenticator.authenticate();
           }
           return Ember.RSVP.reject(e);
         }
@@ -42,10 +42,6 @@ export default Ember.Mixin.create({
     controller.set('practiceUser', practiceUser);
 
     return superResult;
-  },
-
-  _authenticate: function() {
-    return OAuth.redirect(this.get('snowflake_provider'), 'auth');
   },
 
   _getPracticeUser: function(currentUser, practiceId) {
