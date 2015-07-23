@@ -1,8 +1,10 @@
-import DS from 'ember-data';
+import { ActiveModelSerializer } from 'active-model-adapter';
 
-export default DS.ActiveModelSerializer.extend({
+export default ActiveModelSerializer.extend({
   primaryKey: 'uid',
-  extract: function(store, type, payload, id, requestType) {
+  isNewSerializerAPI: true,
+
+  normalizeResponse: function(store, type, payload, id, requestType) {
     payload.id = 'me';
 
     var practiceUsers = payload.practice_users,

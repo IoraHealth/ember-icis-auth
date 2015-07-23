@@ -25,7 +25,7 @@ export default Ember.Mixin.create({
         },
 
         function(e) {
-          if(e.status === 401) {
+          if(e.errors[0].status === '401') {
             _this.authenticator.authenticate();
           }
           return Ember.RSVP.reject(e);

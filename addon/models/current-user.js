@@ -2,7 +2,7 @@ import DS from 'ember-data';
 
 export default DS.Model.extend({
   uid: DS.attr('string'),
-  currentPracticeUsers: DS.hasMany('currentPracticeUser'),
+  currentPracticeUsers: DS.hasMany('currentPracticeUser', { async: false }),
   access_roles: DS.attr(),
 
   practiceUser: function(uid) {
