@@ -1,47 +1,43 @@
+/* jshint expr:true */
+import { expect } from 'chai';
 import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+  describeModule,
+  it
+} from 'ember-mocha';
 
-moduleFor('service:test-authenticator', {
-  // Specify the other units that are required for this test.
-  // needs: ['service:foo']
-});
+describeModule(
+  'service:test-authenticator',
+  'TestAuthenticatorService',
+  {
+    // Specify the other units that are required for this test.
+    // needs: ['service:foo']
+  },
+  function() {
 
-// Replace this with your real tests.
-test('it exists', function(assert) {
-  var service = this.subject();
-  assert.ok(service);
-});
+  it('#authenticate returns a deferred object which always resolves', function(done) {
+    var authenticator = this.subject();
 
-test('#authenticate returns a deferred object which always resolves', function(assert) {
-  assert.expect(1);
-
-  var authenticator = this.subject();
-
-  authenticator.authenticate().done(function() {
-    assert.ok(true);
+    authenticator.authenticate().done(function() {
+      done();
+    });
   });
-});
 
-test('#callback returns a deferred object which resolves with the configured access_token', function(assert) {
-  assert.expect(1);
+  it('#callback returns a deferred object which resolves with the configured access_token', function(done) {
+    var authenticator = this.subject();
+    authenticator.set('access_token', 'i like turtles');
 
-  var authenticator = this.subject();
-  authenticator.set('access_token', 'i like turtles');
-
-  authenticator.callback().done(function(result) {
-    assert.equal(result.access_token, 'i like turtles');
+    authenticator.callback().done(function(result) {
+      expect(result.access_token).to.equal('i like turtles');
+      done();
+    });
   });
-});
 
-test('#callback sets the configured access_token in localStorage', function(assert) {
-  assert.expect(1);
+  it('#callback sets the configured access_token in localStorage', function() {
+    var authenticator = this.subject();
+    authenticator.set('access_token', 'boogie in your butt');
 
-  var authenticator = this.subject();
-  authenticator.set('access_token', 'boogie in your butt');
+    authenticator.callback();
 
-  authenticator.callback();
-
-  assert.equal(localStorage.access_token, 'boogie in your butt');
+    expect(localStorage.access_token).to.equal('boogie in your butt');
+  });
 });
