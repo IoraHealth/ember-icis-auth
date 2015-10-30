@@ -1,0 +1,6 @@
+test_command: 'script/ci'
+
+targets:
+  - type: ember
+    workers: 1
+
