@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+function install_dependencies() {
+  yes | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  yes | sudo apt-get update
+  yes | sudo apt-get install libstdc++6-4.7-dev
+  npm install
+  sudo npm install -g bower
+  export PATH=$(npm bin):$PATH
+  bower install
+}
+
+function prepare_and_run() {
+  source /home/ops/.bashrc
+  install_dependencies
+  export PATH=$(npm bin):$PATH
+  export PATH=./node_modules/.bin:$PATH
+  mkdir phantomjsbin
+  ln -s /usr/bin/phantomjs2 phantomjsbin/phantomjs
+  export PATH=phantomjsbin:$PATH
+
+  ls $(npm bin)
+  ember test
+}
+
+prepare_and_run
+success=$?
+exit $success
+

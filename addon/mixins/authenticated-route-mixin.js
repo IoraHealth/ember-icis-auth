@@ -9,28 +9,15 @@ export default Ember.Mixin.create({
   beforeModel: function(transition) {
     this._super(transition);
 
-    var token = this.get('token');
-    if(!token) {
+    if (transition.queryParams && transition.queryParams.access_token) {
+      localStorage['access_token'] = transition.queryParams.access_token;
+      this.set('token', localStorage['access_token']);
+    }
+
+    if(!this.get('token')) {
       this.authenticator.authenticate();
     } else {
-      var _this = this;
-
-      return this.store.find('current-user', 'me').then(
-
-        function(currentUser) {
-          _this.set('user', currentUser);
-          _this.set('practiceUser', _this._getPracticeUser(currentUser, _this.get('practice_id')));
-
-          return Ember.RSVP.resolve(currentUser);
-        },
-
-        function(e) {
-          if(e.errors[0].status === '401') {
-            _this.authenticator.authenticate();
-          }
-          return Ember.RSVP.reject(e);
-        }
-      );
+      return this.findCurrentUser();
     }
   },
 
@@ -42,6 +29,25 @@ export default Ember.Mixin.create({
     controller.set('practiceUser', practiceUser);
 
     return superResult;
+  },
+
+  findCurrentUser: function() {
+    return this.store.find('current-user', 'me').then(
+
+      (currentUser) => {
+        this.set('user', currentUser);
+        this.set('practiceUser', this._getPracticeUser(currentUser, this.get('practice_id')));
+
+        return Ember.RSVP.resolve(currentUser);
+      },
+
+      (e) => {
+        if(e.errors[0].status === '401') {
+          this.authenticator.authenticate();
+        }
+        return Ember.RSVP.reject(e);
+      }
+    );
   },
 
   _getPracticeUser: function(currentUser, practiceId) {
