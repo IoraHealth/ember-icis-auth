@@ -1,6 +1,6 @@
 {
   "name": "ember-icis-auth",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Authentication engine for ICIS applications",
   "directories": {
     "doc": "doc",
@@ -45,7 +45,7 @@
     "ember-addon"
   ],
   "dependencies": {
-    "active-model-adapter": "1.13.5",
+    "active-model-adapter": "^2.0.3",
     "ember-cli-babel": "^5.1.3"
   },
   "ember-addon": {
