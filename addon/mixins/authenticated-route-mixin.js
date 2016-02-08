@@ -4,7 +4,6 @@ export default Ember.Mixin.create({
   token: localStorage['access_token'],
   snowflake_provider: 'CHANGEME',
   snowflake_url: 'CHANGEME',
-  practice_id: localStorage['practice_id'],
 
   beforeModel: function(transition) {
     this._super(transition);
@@ -21,22 +20,12 @@ export default Ember.Mixin.create({
     }
   },
 
-  setupController: function(controller, model) {
-    var superResult = this._super(controller, model);
-
-    var currentUser  = this.get('user');
-    var practiceUser = this._getPracticeUser(currentUser, this.get('practice_id'));
-    controller.set('practiceUser', practiceUser);
-
-    return superResult;
-  },
-
   findCurrentUser: function() {
     return this.store.find('current-user', 'me').then(
 
       (currentUser) => {
         this.set('user', currentUser);
-        this.set('practiceUser', this._getPracticeUser(currentUser, this.get('practice_id')));
+        this.set('practiceUser', currentUser.get('currentPracticeUser'));
 
         return Ember.RSVP.resolve(currentUser);
       },
@@ -48,13 +37,5 @@ export default Ember.Mixin.create({
         return Ember.RSVP.reject(e);
       }
     );
-  },
-
-  _getPracticeUser: function(currentUser, practiceId) {
-    if (practiceId) {
-      return currentUser.practiceUserByPracticeId(practiceId);
-    } else {
-      return currentUser.get('defaultPracticeUser');
-    }
   }
 });
