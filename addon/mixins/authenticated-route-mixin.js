@@ -32,6 +32,7 @@ export default Ember.Mixin.create({
 
       (e) => {
         if(e.errors[0].status === '401') {
+          localStorage.removeItem('access_token');
           this.authenticator.authenticate();
         }
         return Ember.RSVP.reject(e);
