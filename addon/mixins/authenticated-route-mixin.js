@@ -6,7 +6,11 @@ export default Ember.Mixin.create({
       return localStorage['access_token'];
     },
     set(_, value) {
-      localStorage['access_token'] = value;
+      if (value === undefined) {
+        localStorage.removeItem('access_token');
+      } else {
+        localStorage['access_token'] = value;
+      }
       return value;
     }
   }),
@@ -39,6 +43,7 @@ export default Ember.Mixin.create({
 
       (e) => {
         if(e.errors[0].status === '401') {
+          this.set('token', undefined);
           this.authenticator.authenticate();
         }
         return Ember.RSVP.reject(e);
