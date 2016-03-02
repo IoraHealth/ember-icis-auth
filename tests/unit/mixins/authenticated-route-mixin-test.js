@@ -10,17 +10,36 @@ import AuthenticatedRouteMixinMixin from 'ember-icis-auth/mixins/authenticated-r
 import sinon from 'sinon';
 
 describe('AuthenticatedRouteMixinMixin', function() {
+  beforeEach(function() {
+    this.authenticatedRoute = Ember.Object.extend(AuthenticatedRouteMixinMixin, {
+      _super: function() {}
+    }).create({token: 'bogus'});
+
+    this.superStub = sinon.collection.stub(this.authenticatedRoute, '_super');
+  });
+
+  describe('#token', function() {
+    describe('set', function() {
+      beforeEach(function() {
+        localStorage['access_token'] = 'existingtoken';
+      });
+
+      it('removes localStorage item if passed null', function() {
+        this.authenticatedRoute.set('token', null);
+        expect(localStorage.hasOwnProperty('access_token')).to.be.false;
+      });
+
+      it('removes localStorage item if passed undefined', function() {
+        this.authenticatedRoute.set('token', undefined);
+        expect(localStorage.hasOwnProperty('access_token')).to.be.false;
+      });
+    });
+  });
+
   describe('#beforeModel', function() {
     beforeEach(function() {
-      this.authenticatedRoute = Ember.Object.extend(AuthenticatedRouteMixinMixin, {
-        _super: function() {}
-      }).create({token: 'bogus'});
-
-      this.superStub = sinon.collection.stub(this.authenticatedRoute, '_super');
-
       sinon.collection.stub(this.authenticatedRoute, 'findCurrentUser');
     });
-
 
     describe('when passed a queryParam containing access token', function() {
       beforeEach(function() {

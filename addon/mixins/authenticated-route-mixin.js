@@ -6,7 +6,7 @@ export default Ember.Mixin.create({
       return localStorage['access_token'];
     },
     set(_, value) {
-      if (value === undefined) {
+      if (value == null) {
         localStorage.removeItem('access_token');
       } else {
         localStorage['access_token'] = value;
