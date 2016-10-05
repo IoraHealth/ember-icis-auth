@@ -25,6 +25,8 @@ export default Ember.Service.extend({
   },
 
   _queueTokenRefresh(msTimeout) {
+    this._cancelRefreshTimer();
+
     const context = this;
     const timer = Ember.run.later(context, function () {
       const baseUrl = context.get('snowflake_url');
@@ -52,13 +54,16 @@ export default Ember.Service.extend({
     this._queueTokenRefresh(msRefreshTimeout);
   },
 
-  destroy() {
-    this._super(...arguments);
-
+  _cancelRefreshTimer() {
     const refreshTimer = this.get('_tokenRefreshTimer');
 
     if (refreshTimer) {
       Ember.run.cancel(refreshTimer);
     }
+  },
+
+  destroy() {
+    this._super(...arguments);
+    this._cancelRefreshTimer();
   }
 });
