@@ -14,7 +14,7 @@ export default Ember.Service.extend({
 
     if (refreshAt && refreshAt > rightNow) {
       const timeout = refreshAt - rightNow;
-      this._queueTokenRefresh(timeout);
+      this.queueTokenRefresh(timeout);
     }
   },
 
@@ -24,25 +24,35 @@ export default Ember.Service.extend({
 
   callback: function() {
     return OAuth.callback(this.get('snowflake_provider'))
-                .done(this._oauthCallback.bind(this));
+                .done(Ember.run.bind(this, this._oauthCallback));
   },
 
-  _queueTokenRefresh(msTimeout) {
-    this._cancelRefreshTimer();
+  queueTokenRefresh(msTimeout) {
+    this.cancelTokenRefresh();
 
-    const context = this;
-    const timer = Ember.run.later(context, function () {
-      const baseUrl = context.get('snowflake_url');
-      const accessToken = localStorage['access_token'];
-      const url = `${baseUrl}/api/v1/tokens/${accessToken}/extend_token`;
-
-      Ember.$.ajax(url, {
-        method: 'PUT',
-        contentType: 'application/json'
-      }).done(context._oauthCallback.bind(context));
-    }, msTimeout);
+    const timer = Ember.run.later(this, this._tokenRefresh, msTimeout);
 
     this.set('_tokenRefreshTimer', timer);
+  },
+
+  cancelTokenRefresh() {
+    const refreshTimer = this.get('_tokenRefreshTimer');
+
+    if (refreshTimer) {
+      return Ember.run.cancel(refreshTimer);
+    }
+    return true;
+  },
+
+  _tokenRefresh() {
+    const baseUrl = this.get('snowflake_url');
+    const accessToken = localStorage['access_token'];
+    const url = `${baseUrl}/api/v1/tokens/${accessToken}/extend_token`;
+
+    Ember.$.ajax(url, {
+      method: 'PUT',
+      contentType: 'application/json'
+    }).done(Ember.run.bind(this, this._oauthCallback));
   },
 
   _oauthCallback(result) {
@@ -54,19 +64,11 @@ export default Ember.Service.extend({
     const msRefreshTimeout = (secsToExpire - SECS_BEFORE_EXPIRY) * SECS_TO_MILLISECS;
     localStorage['token_refresh_at'] = new Date().valueOf() + msRefreshTimeout;
 
-    this._queueTokenRefresh(msRefreshTimeout);
-  },
-
-  _cancelRefreshTimer() {
-    const refreshTimer = this.get('_tokenRefreshTimer');
-
-    if (refreshTimer) {
-      Ember.run.cancel(refreshTimer);
-    }
+    this.queueTokenRefresh(msRefreshTimeout);
   },
 
   destroy() {
     this._super(...arguments);
-    this._cancelRefreshTimer();
+    this.cancelTokenRefresh();
   }
 });
