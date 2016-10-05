@@ -1,5 +1,8 @@
 import Ember from 'ember';
 
+const SECS_BEFORE_EXPIRY = 300; // 5 minutes in seconds
+const SECS_TO_MILLISECS = 1000; // 1 second in milliseconds
+
 export default Ember.Service.extend({
   snowflake_provider: "CHANGEME",
   snowflake_url: "https://localhost",
@@ -48,7 +51,7 @@ export default Ember.Service.extend({
 
     // Refresh access_token five minutes prior to expiry.
     const secsToExpire = result.expires_in;
-    const msRefreshTimeout = (secsToExpire - 300) * 1000;
+    const msRefreshTimeout = (secsToExpire - SECS_BEFORE_EXPIRY) * SECS_TO_MILLISECS;
     localStorage['token_refresh_at'] = new Date().valueOf() + msRefreshTimeout;
 
     this._queueTokenRefresh(msRefreshTimeout);
