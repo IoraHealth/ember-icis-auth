@@ -9,6 +9,8 @@ export default Ember.Service.extend({
   _tokenRefreshTimer: null,
 
   init() {
+    this._super(...arguments);
+
     const refreshAt = localStorage['token_refresh_at'];
     const rightNow = new Date().valueOf();
 
