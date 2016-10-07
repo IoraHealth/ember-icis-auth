@@ -16,7 +16,7 @@ export default Ember.Service.extend({
 
     if (refreshAt && refreshAt > rightNow) {
       const timeout = refreshAt - rightNow;
-      this.queueTokenRefresh(timeout);
+      this.scheduleTokenRefresh(timeout);
     }
   },
 
@@ -29,10 +29,10 @@ export default Ember.Service.extend({
                 .done(Ember.run.bind(this, this._oauthCallback));
   },
 
-  queueTokenRefresh(msTimeout) {
+  scheduleTokenRefresh(msTimeout) {
     this.cancelTokenRefresh();
 
-    const timer = Ember.run.later(this, this._tokenRefresh, msTimeout);
+    const timer = Ember.run.later(this, this.tokenRefresh, msTimeout);
 
     this.set('_tokenRefreshTimer', timer);
   },
@@ -66,7 +66,7 @@ export default Ember.Service.extend({
     const msRefreshTimeout = (secsToExpire - SECS_BEFORE_EXPIRY) * SECS_TO_MILLISECS;
     localStorage['token_refresh_at'] = new Date().valueOf() + msRefreshTimeout;
 
-    this.queueTokenRefresh(msRefreshTimeout);
+    this.scheduleTokenRefresh(msRefreshTimeout);
   },
 
   destroy() {

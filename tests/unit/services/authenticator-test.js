@@ -39,12 +39,12 @@ describeModule(
 
           now = new Date().valueOf();
           clock = sinon.useFakeTimers(now);
-          sinon.stub(authenticator, 'queueTokenRefresh');
+          sinon.stub(authenticator, 'scheduleTokenRefresh');
         });
 
         afterEach(function () {
           clock.restore();
-          authenticator.queueTokenRefresh.restore();
+          authenticator.scheduleTokenRefresh.restore();
           localStorage.removeItem("token_refresh_at");
         });
 
@@ -58,8 +58,8 @@ describeModule(
           });
 
           it("queues up a token refresh", function () {
-            expect(authenticator.queueTokenRefresh.calledOnce).to.be.true;
-            expect(authenticator.queueTokenRefresh.calledWith(now - refreshAt));
+            expect(authenticator.scheduleTokenRefresh.calledOnce).to.be.true;
+            expect(authenticator.scheduleTokenRefresh.calledWith(now - refreshAt));
           });
         });
 
@@ -70,7 +70,7 @@ describeModule(
           });
 
           it("does not queue up a token refresh", function () {
-            expect(authenticator.queueTokenRefresh.called).to.be.false;
+            expect(authenticator.scheduleTokenRefresh.called).to.be.false;
           });
         });
       });
@@ -142,14 +142,14 @@ describeModule(
 
           authenticator = this.subject();
 
-          sinon.spy(authenticator, 'queueTokenRefresh');
+          sinon.spy(authenticator, 'scheduleTokenRefresh');
 
           authenticator.callback();
         });
 
         afterEach(function () {
           clock.restore();
-          authenticator.queueTokenRefresh.restore();
+          authenticator.scheduleTokenRefresh.restore();
         });
 
         it("sets token_refresh_at in localStorage from result's expires_in", function () {
@@ -157,8 +157,8 @@ describeModule(
         });
 
         it('queues up a token refresh', function () {
-          expect(authenticator.queueTokenRefresh.calledOnce).to.be.true;
-          expect(authenticator.queueTokenRefresh.calledWithExactly(msTimeout)).to.be.true;
+          expect(authenticator.scheduleTokenRefresh.calledOnce).to.be.true;
+          expect(authenticator.scheduleTokenRefresh.calledWithExactly(msTimeout)).to.be.true;
         });
       });
 
@@ -177,7 +177,7 @@ describeModule(
       });
     });
 
-    describe("#queueTokenRefresh", function () {
+    describe("#scheduleTokenRefresh", function () {
       let authenticator, msTimeout;
 
       beforeEach(function () {
@@ -188,7 +188,7 @@ describeModule(
       it("calls cancelTokenRefresh to cancel any scheduled token refreshes", function () {
         sinon.spy(authenticator, 'cancelTokenRefresh');
 
-        authenticator.queueTokenRefresh(msTimeout);
+        authenticator.scheduleTokenRefresh(msTimeout);
 
         expect(authenticator.cancelTokenRefresh.calledOnce).to.be.true;
 
@@ -198,9 +198,9 @@ describeModule(
       it("schedules a token refresh with the Ember run loop", function () {
         sinon.spy(Ember.run, 'later');
 
-        authenticator.queueTokenRefresh(msTimeout);
+        authenticator.scheduleTokenRefresh(msTimeout);
 
-        expect(Ember.run.later.calledWith(authenticator, authenticator._tokenRefresh, msTimeout)).to.be.true;
+        expect(Ember.run.later.calledWith(authenticator, authenticator.tokenRefresh, msTimeout)).to.be.true;
 
         Ember.run.later.restore();
       });
@@ -210,7 +210,7 @@ describeModule(
 
         sinon.stub(Ember.run, 'later').returns(timerResponse);
 
-        authenticator.queueTokenRefresh(msTimeout);
+        authenticator.scheduleTokenRefresh(msTimeout);
 
         expect(authenticator.get('_tokenRefreshTimer')).to.eq(timerResponse);
 
