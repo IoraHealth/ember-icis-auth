@@ -46,15 +46,19 @@ export default Ember.Service.extend({
     return true;
   },
 
-  _tokenRefresh() {
+  tokenRefresh() {
     const baseUrl = this.get('snowflake_url');
     const accessToken = localStorage['access_token'];
     const url = `${baseUrl}/api/v1/tokens/${accessToken}/extend_token`;
 
-    Ember.$.ajax(url, {
+    return Ember.$.ajax(url, {
       method: 'PUT',
       contentType: 'application/json'
-    }).done(Ember.run.bind(this, this._oauthCallback));
+    }).then(Ember.run.bind(this, this._oauthCallback), (response) => {
+      if (response.status === 401) {
+        this.authenticate();
+      }
+    });
   },
 
   _oauthCallback(result) {

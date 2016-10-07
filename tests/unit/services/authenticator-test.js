@@ -257,6 +257,99 @@ describeModule(
       });
     });
 
+    describe("#tokenRefresh", function () {
+      let authenticator, endpoint, ajaxOptions, accessToken;
+
+      beforeEach(function () {
+        accessToken = 'deadbeef';
+        endpoint = `https://localhost/api/v1/tokens/${accessToken}/extend_token`;
+        ajaxOptions = { method: 'PUT', contentType: 'application/json' };
+
+        localStorage["access_token"] = accessToken;
+
+        authenticator = this.subject();
+      });
+
+      afterEach(function () {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("token_refresh_at");
+      });
+
+      context("regardless of response", function () {
+        beforeEach(function () {
+          sinon.stub(Ember.$, 'ajax').returns({ then: function () {} });
+          authenticator.tokenRefresh();
+        });
+
+        afterEach(function () {
+          Ember.$.ajax.restore();
+        });
+
+        it("hits snowflake's /api/v1/tokens/{token}/extend_token endpoint", function () {
+          expect(Ember.$.ajax.calledWith(endpoint, ajaxOptions)).to.be.true;
+        });
+      });
+
+      context('when the call is successful', function () {
+        let now, clock, msTimeout, expectedTokenRefreshAt;
+
+        beforeEach(function () {
+          let deferred = Ember.$.Deferred();
+          let expiresIn = 600;
+          deferred.resolve({ access_token: accessToken, expires_in: expiresIn });
+
+          now = new Date().valueOf();
+          clock = sinon.useFakeTimers(now);
+          msTimeout = (expiresIn - 300) * 1000;
+          expectedTokenRefreshAt = now + msTimeout;
+
+          authenticator = this.subject();
+
+          sinon.spy(authenticator, 'scheduleTokenRefresh');
+
+          sinon.stub(Ember.$, 'ajax').returns(deferred);
+
+          authenticator.tokenRefresh();
+        });
+
+        afterEach(function () {
+          clock.restore();
+          authenticator.scheduleTokenRefresh.restore();
+          Ember.$.ajax.restore();
+        });
+
+        it("sets token_refresh_at in localStorage from result's expires_in", function () {
+          expect(localStorage['token_refresh_at']).to.equal(expectedTokenRefreshAt.toString());
+        });
+
+        it('queues up a token refresh', function () {
+          expect(authenticator.scheduleTokenRefresh.calledOnce).to.be.true;
+          expect(authenticator.scheduleTokenRefresh.calledWithExactly(msTimeout)).to.be.true;
+        });
+      });
+
+      context('when the response is 401', function () {
+        beforeEach(function () {
+          let deferred = Ember.$.Deferred();
+          deferred.reject({ status: 401 });
+
+          sinon.stub(Ember.$, 'ajax').returns(deferred);
+          sinon.stub(authenticator, 'authenticate');
+
+          authenticator.tokenRefresh();
+        });
+
+        afterEach(function () {
+          authenticator.authenticate.restore();
+          Ember.$.ajax.restore();
+        });
+
+        it('makes the user re-auth', function () {
+          expect(authenticator.authenticate.calledOnce).to.be.true;
+        });
+      });
+    });
+
     describe("#destroy", function () {
       let authenticator;
 
