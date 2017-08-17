@@ -17,19 +17,9 @@ describeModule(
   'service:authenticator',
   'AuthenticatorService',
   {
-    // Specify the other units that are required for this test.
-    // needs: ['service:foo']
+    needs: ['service:oauth2']
   },
   function() {
-    beforeEach(function() {
-      this.oldOAuth = window.OAuth;
-      window.OAuth = {};
-    });
-
-    afterEach(function() {
-      window.OAuth = this.oldOAuth;
-    });
-
     describe("#init", function () {
       context("token_refresh_at exists in localStorage", function () {
         let authenticator, clock, now;
@@ -77,103 +67,68 @@ describeModule(
     });
 
     describe("#authenticate", function () {
-      it('uses OAuth redirect with snowflake provider and auth callback url', function(done) {
-        // stub redirect
-        OAuth.redirect = function(provider, callbackUrl) {
-          expect(provider).to.equal(authenticator.get('snowflake_provider'));
-          expect(callbackUrl).to.equal('auth');
-          done();
-        };
+      let authenticator, oauth2;
 
-        var authenticator = this.subject();
+      beforeEach(function () {
+        authenticator = this.subject();
+        oauth2 = authenticator.get('oauth2');
+      });
+
+      afterEach(function() {
+        oauth2.setProvider.restore();
+        oauth2.authorize.restore();
+      });
+
+      it('sets up the ouath2 service and calls authorize', function() {
+        sinon.stub(oauth2, 'setProvider');
+        sinon.stub(oauth2, 'authorize');
 
         authenticator.authenticate();
+
+        expect(oauth2.setProvider).to.have.been.calledWith('snowflake');
+        const redirectUri = oauth2.get('redirectUri');
+        expect(redirectUri).to.equal(`${window.location.origin}/token`);
+        expect(oauth2.authorize).to.have.been.called;
       });
     });
 
-    describe("#callback", function () {
-      it('calls OAuth.callback using snowflake provider', function(done) {
-        var deferred = Ember.$.Deferred();
+    describe("#verify", function () {
+      let authenticator, oauth2, hash, expires_in;
 
-        //stub callback
-        OAuth.callback = function(provider) {
-          expect(provider).to.equal(authenticator.get('snowflake_provider'));
-          done();
-          return deferred;
-        };
+      beforeEach(function () {
+        authenticator = this.subject();
+        sinon.stub(authenticator, 'scheduleTokenRefresh');
 
-        var authenticator = this.subject();
+        oauth2 = authenticator.get('oauth2');
+        oauth2.saveState(oauth2.requestObj());
+        sinon.stub(oauth2, 'setProvider');
 
-        authenticator.callback();
+        expires_in = 7200;
+        hash = `#access_token=foo&response_type=token&expires_in=${expires_in}&state=${oauth2.get('state')}`;
       });
 
-      it('sets access_token from result in localStorage', function() {
-        var deferred = Ember.$.Deferred();
-        deferred.resolve({access_token: '123unicorn'});
-
-        //stub callback
-        OAuth.callback = function() {
-          return deferred;
-        };
-
-        var authenticator = this.subject();
-
-        authenticator.callback();
-
-        expect(localStorage['access_token']).to.equal('123unicorn');
+      afterEach(function() {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('token_refresh_at');
+        authenticator.scheduleTokenRefresh.restore();
+        oauth2.setProvider.restore();
+        oauth2.clearStates();
+        oauth2.removeToken();
       });
 
-      describe("refresh behavior", function () {
-        let deferred, expiresIn, clock, authenticator, now,
-            msTimeout, expectedTokenRefreshAt;
-
-        beforeEach(function () {
-          deferred = Ember.$.Deferred();
-          expiresIn = 600;
-          deferred.resolve({ access_token: 'deadbeef', expires_in: expiresIn });
-
-          //stub callback
-          OAuth.callback = () => deferred;
-
-          now = new Date().valueOf();
-          clock = sinon.useFakeTimers(now);
-          msTimeout = (expiresIn - 300) * 1000;
-          expectedTokenRefreshAt = now + msTimeout;
-
-          authenticator = this.subject();
-
-          sinon.spy(authenticator, 'scheduleTokenRefresh');
-
-          authenticator.callback();
-        });
-
-        afterEach(function () {
-          clock.restore();
-          authenticator.scheduleTokenRefresh.restore();
-        });
-
-        it("sets token_refresh_at in localStorage from result's expires_in", function () {
-          expect(localStorage['token_refresh_at']).to.equal(expectedTokenRefreshAt.toString());
-        });
-
-        it('queues up a token refresh', function () {
-          expect(authenticator.scheduleTokenRefresh.calledOnce).to.be.true;
-          expect(authenticator.scheduleTokenRefresh.calledWithExactly(msTimeout)).to.be.true;
-        });
+      it('puts the token into local storage and schedules a refresh', function() {
+        authenticator.verify(hash);
+        expect(localStorage['access_token']).to.equal('foo');
+        const fiveMinutesBeforeExpiry = (expires_in - 5 * 60);
+        const expectedMsTimeout = fiveMinutesBeforeExpiry * 1000;
+        expect(authenticator.scheduleTokenRefresh).to.have.been.calledWith(expectedMsTimeout);
       });
 
-      it('returns the deferred object returned by OAuth', function() {
-        var deferred = Ember.$.Deferred();
-
-        //stub callback
-        OAuth.callback = function(provider) {
-          expect(provider).to.equal(authenticator.get('snowflake_provider'));
-          return deferred;
-        };
-
-        var authenticator = this.subject();
-
-        expect(authenticator.callback()).to.equal(deferred);
+      it('does not do anything if the redirect is invalid', function() {
+        hash += '-blah';
+        authenticator.verify(hash);
+        expect(localStorage['access_token']).to.beNull;
+        expect(authenticator.scheduleTokenRefresh).not.to.have.been.called;
       });
     });
 
@@ -277,7 +232,9 @@ describeModule(
 
       context("regardless of response", function () {
         beforeEach(function () {
-          sinon.stub(Ember.$, 'ajax').returns({ then: function () {} });
+          let deferred = Ember.$.Deferred();
+          sinon.stub(Ember.$, 'ajax').returns(deferred);
+
           authenticator.tokenRefresh();
         });
 
@@ -345,7 +302,7 @@ describeModule(
         });
 
         it('makes the user re-auth', function () {
-          expect(authenticator.authenticate.calledOnce).to.be.true;
+          expect(authenticator.authenticate).to.have.been.called;
         });
       });
     });

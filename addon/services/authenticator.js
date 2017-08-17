@@ -4,9 +4,9 @@ const SECS_BEFORE_EXPIRY = 300; // 5 minutes in seconds
 const SECS_TO_MILLISECS = 1000; // 1 second in milliseconds
 
 export default Ember.Service.extend({
-  snowflake_provider: "CHANGEME",
-  snowflake_url: "https://localhost",
   _tokenRefreshTimer: null,
+  snowflake_url: 'https://localhost',
+  oauth2: Ember.inject.service('oauth2'),
 
   init() {
     this._super(...arguments);
@@ -20,18 +20,28 @@ export default Ember.Service.extend({
     }
   },
 
-  authenticate: function() {
-    return OAuth.redirect(this.get('snowflake_provider'), 'auth');
+  authenticate() {
+    const oauth2 = this.get('oauth2');
+    oauth2.setProvider('snowflake');
+    oauth2.set('redirectUri', `${window.location.origin}/token`);
+    oauth2.authorize();
   },
 
-  callback: function() {
-    return OAuth.callback(this.get('snowflake_provider'))
-                .done(Ember.run.bind(this, this._oauthCallback));
+  verify(hash) {
+    const oauth2 = this.get('oauth2');
+    oauth2.setProvider('snowflake');
+    oauth2.handleRedirect(hash, () => {
+      const token = this.get('oauth2').getToken();
+      if (token && token.access_token) {
+        this._oauthCallback(token);
+      }
+    });
   },
 
   scheduleTokenRefresh(msTimeout) {
     this.cancelTokenRefresh();
 
+    localStorage['token_refresh_at'] = new Date().valueOf() + msTimeout;
     const timer = Ember.run.later(this, this.tokenRefresh, msTimeout);
 
     this.set('_tokenRefreshTimer', timer);
@@ -54,7 +64,9 @@ export default Ember.Service.extend({
     return Ember.$.ajax(url, {
       method: 'PUT',
       contentType: 'application/json'
-    }).then(Ember.run.bind(this, this._oauthCallback), (response) => {
+    })
+    .done(Ember.run.bind(this, this._oauthCallback))
+    .fail((response) => {
       if (response.status === 401) {
         this.authenticate();
       }
@@ -68,7 +80,6 @@ export default Ember.Service.extend({
     // Refresh access_token five minutes prior to expiry.
     const secsToExpire = result.expires_in;
     const msRefreshTimeout = (secsToExpire - SECS_BEFORE_EXPIRY) * SECS_TO_MILLISECS;
-    localStorage['token_refresh_at'] = new Date().valueOf() + msRefreshTimeout;
 
     this.scheduleTokenRefresh(msRefreshTimeout);
   },

@@ -1,11 +1,11 @@
-# Ember-icis-auth
+# ember-icis-auth
 
 This Ember CLI addon gives you everything you need to start authenticating
 against our identity service which will allow you access to our service layer
 via CORS.
 
 What this does for you:
-* Gives you authentication via OAuth-js to our identity server, then sets an
+* Gives you authentication via OAuth to our identity server, then sets an
 access token so that our model layer can interact with our services.
 * Provides a route ("/token") that can accept an access_token query parameter
 that will also set your access token, skipping OAuth. The idea behind this is
@@ -21,48 +21,53 @@ npm install --save-dev ember-icis-auth
 ember g ember-icis-auth
 ```
 
-Then modify your Brocfile.js to add this:
-```js
-//Brocfile.js
-app.import('bower_components/oauth-js/dist/oauth.js');
-```
+Set up the Snowflake OAuth provider configuration:
 
-Create an OAuth initializer:
-```js
-//app/initializers/oauth.js
-import config from 'notes-dash/config/environment';
+```javascript
+// config/environment.js
 
-export default {
-  name: 'notes-dash',
-  initialize: function() {
-    OAuth.initialize(config.APP.OAUTHD_KEY);
-    OAuth.setOAuthdURL(config.APP.OAUTHD_URL);
+if (environment == 'staging') {
+  ENV.APP.SNOWFLAKE_URI = 'https://snowflake-staging.icisapp.com';
+  ENV.APP.SNOWFLAKE_CLIENT_ID = '<app-client-id-here>';
+}
+
+// Repeat the above for each env, then at the end:
+
+ENV.EmberENV['ember-oauth2'] = {
+  snowflake: {
+    clientId: ENV.APP.SNOWFLAKE_CLIENT_ID,
+    authBaseUri: `${ENV.APP.SNOWFLAKE_URI}/oauth/authorize`,
+    scope: 'user'
   }
 };
 ```
 
+Repeat this for each environment.
+
 Create authenticator service, and optionally a test double service:
-```js
-//app/services/authenticator.js
+
+```javascript
+// app/services/authenticator.js
 import authenticator from 'ember-icis-auth/services/authenticator';
 import config from 'notes-dash/config/environment';
 
 export default authenticator.extend({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER
+  snowflake_url: config.APP.SNOWFLAKE_URI
 });
 
-//app/services/test-authenticator.js
+// app/services/test-authenticator.js
 import authenticator from 'ember-icis-auth/services/test-authenticator';
 import config from 'notes-dash/config/environment';
 
 export default authenticator.extend({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER
+  snowflake_url: config.APP.SNOWFLAKE_URI
 });
 ```
 
 Create an Authenticator initializer:
-```js
-//app/initializer/authenticator.js
+
+```javascript
+// app/initializer/authenticator.js
 import config from 'notes-dash/config/environment';
 
 export function initialize(container, application) {
@@ -89,29 +94,21 @@ export default {
 };
 ```
 
-Set the specific route configs:
-```js
-//app/routes/index.js
-import config from 'notes-dash/config/environment';
-import Index from 'ember-icis-auth/routes/index';
+Make the application authenticated:
 
-export default Index.reopen({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER,
-  snowflake_url: config.APP.SNOWFLAKE_URI
-});
+```javascript
+// app/routes/index.js
+import AuthenticatedRouteMixin from 'ember-icis-auth/mixins/authenticated-route-mixin';
 
-//app/routes/auth.js
-import Auth from 'ember-icis-auth/routes/auth'
-import config from 'notes-dash/config/environment'
-
-export default Auth.reopen({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER
+export default Ember.Route.extend(AuthenticatedRouteMixin, {
+  // ... route implementation as normal
 });
 ```
 
 Set up the store adapter for the current-user model:
-```js
-//app/adapters/current-user.js
+
+```javascript
+// app/adapters/current-user.js
 import CurrentUser from 'ember-icis-auth/adapters/current-user';
 import config from 'notes-dash/config/environment';
 
@@ -121,35 +118,31 @@ export default CurrentUser.reopen({
 ```
 
 And finally setup the basic routing:
-```js
-//app/router.js
+
+```javascript
+// app/router.js
 Router.map(function() {
-  this.route("auth");
   this.route("token");
 });
 ```
 
 ### Transitioning to other routes after auth
 
-The default behavior in the auth route transitions to the app's index after
-successful authentication. You may wish to implement other logic, and the auth
+The default behavior in the token route transitions to the app's index after
+successful authentication. You may wish to implement other logic, and the token
 route makes it easy to do so using the transitionToTargetRoute callback.
 
-```js
-//app/routes/auth.js
-import Auth from 'ember-icis-auth/routes/auth'
-import config from 'notes-dash/config/environment'
+```javascript
+// app/routes/token.js
+import Token from 'ember-icis-auth/routes/token'
 
-export default Auth.reopen({
-  snowflake_provider: config.APP.SNOWFLAKE_PROVIDER,
-
+export default Token.reopen({
   transitionToTargetRoute: function(transition) {
     console.log("We're authenticated now!");
     this._super(transition);
   }
 });
 ```
-
 
 ## Running Tests
 

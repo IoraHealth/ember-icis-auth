@@ -2,8 +2,6 @@ import Ember from 'ember';
 
 export default Ember.Mixin.create({
   token: localStorage['access_token'],
-  snowflake_provider: 'CHANGEME',
-  snowflake_url: 'CHANGEME',
 
   beforeModel: function(transition) {
     this._super(transition);
@@ -14,6 +12,7 @@ export default Ember.Mixin.create({
     }
 
     if(!this.get('token')) {
+      transition.abort();
       this.authenticator.authenticate();
     } else {
       return this.findCurrentUser();

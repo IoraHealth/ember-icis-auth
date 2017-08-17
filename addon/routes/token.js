@@ -2,9 +2,13 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   beforeModel: function(transition) {
-    var access_token = transition.queryParams.access_token;
-    localStorage['access_token'] = access_token;
+    this.get('authenticator').verify(window.location.hash);
+    if (localStorage['access_token']) {
+      return this.transitionToTargetRoute(transition);
+    }
+  },
 
-    return this.transitionTo('index');
+  transitionToTargetRoute: function() {
+    this.transitionTo('index');
   }
 });
