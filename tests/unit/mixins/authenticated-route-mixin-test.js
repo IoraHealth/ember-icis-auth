@@ -21,7 +21,6 @@ describe('AuthenticatedRouteMixinMixin', function() {
       sinon.collection.stub(this.authenticatedRoute, 'findCurrentUser');
     });
 
-
     describe('when passed a queryParam containing access token', function() {
       beforeEach(function() {
         this.transition = {

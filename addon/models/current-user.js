@@ -7,17 +7,16 @@ export default DS.Model.extend({
   current_practice_user_uid: DS.attr('string'),
 
   practiceUser: function(uid) {
-    return this.get('currentPracticeUsers').findBy('id', uid);
+    return this.get('currentPracticeUsers').findBy('uid', uid);
   },
 
   currentPracticeUser: function() {
     let uid = this.get('current_practice_user_uid');
-
     return this.practiceUser(uid);
   }.property('current_practice_user_uid'),
 
-  practiceUserByPracticeId: function(practiceId) {
-    return this.get('currentPracticeUsers').findBy('practiceId', parseInt(practiceId, 10));
+  practiceUserByPracticeUid: function(practiceUid) {
+    return this.get('currentPracticeUsers').findBy('practiceUid', practiceUid);
   },
 
   defaultPracticeUser: function() {

@@ -1,9 +1,11 @@
 import { ActiveModelSerializer } from 'active-model-adapter';
 
 export default ActiveModelSerializer.extend({
+  primaryKey: 'uid',
   isNewSerializerAPI: true,
 
   normalizeResponse: function(store, type, payload, id, requestType) {
+    payload = payload.user;
     payload.id = 'me';
 
     var practiceUsers = payload.practice_users,

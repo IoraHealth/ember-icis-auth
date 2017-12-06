@@ -3,7 +3,7 @@ import DS from 'ember-data';
 export default DS.RESTAdapter.extend({
   PATH: 'me.json',
   host: 'CHANGEME',
-  namespace: 'api/v1',
+  namespace: 'api/v2',
   token: localStorage['access_token'],
 
   buildURL: function() {

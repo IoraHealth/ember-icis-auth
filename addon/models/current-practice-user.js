@@ -1,8 +1,9 @@
 import DS from 'ember-data';
 
 export default DS.Model.extend({
+  uid: DS.attr('string'),
   default: DS.attr('boolean'),
-  practiceId: DS.attr('number'),
+  practiceUid: DS.attr('string'),
   role: DS.attr('string'),
   signable: DS.attr('boolean'),
 
