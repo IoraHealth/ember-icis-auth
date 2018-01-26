@@ -6,6 +6,9 @@ dist/
 .bowerrc
 .editorconfig
 .ember-cli
+.gitignore
+.eslintrc.js
+.watchmanconfig
 .travis.yml
 .npmignore
 **/.gitkeep
