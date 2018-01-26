@@ -2350,9 +2350,9 @@ ember-mocha@^0.12.0:
   dependencies:
     ember-test-helpers "^0.6.3"
 
-"ember-oauth2@git+ssh://git@github.com/amkirwan/ember-oauth2#c532e3aca2ea36bedf4f4c67e050c4d301b05471":
-  version "2.0.2-beta"
-  resolved "git+ssh://git@github.com/amkirwan/ember-oauth2#c532e3aca2ea36bedf4f4c67e050c4d301b05471"
+ember-oauth2@^2.0.3-beta:
+  version "2.0.3-beta"
+  resolved "https://registry.yarnpkg.com/ember-oauth2/-/ember-oauth2-2.0.3-beta.tgz#6adbcf18ff90567dfa7cfbf339f6cf47acc9d560"
 
 ember-resolver@^2.0.3:
   version "2.1.1"

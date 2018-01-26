@@ -1,6 +1,6 @@
 {
   "name": "ember-icis-auth",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Authentication engine for ICIS applications",
   "directories": {
     "doc": "doc",
@@ -52,7 +52,7 @@
   "dependencies": {
     "active-model-adapter": "^2.0.3",
     "ember-cli-babel": "^6.0.0",
-    "ember-oauth2": "git+ssh://git@github.com/amkirwan/ember-oauth2#c532e3aca2ea36bedf4f4c67e050c4d301b05471"
+    "ember-oauth2": "^2.0.3-beta"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"
