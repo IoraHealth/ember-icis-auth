@@ -14,6 +14,7 @@ module.exports = {
       args: [
         '--disable-gpu',
         '--headless',
+        '--no-sandbox', // Required for Travis CI: https://github.com/travis-ci/travis-ci/issues/8836
         '--remote-debugging-port=9222',
         '--window-size=1440,900'
       ]
