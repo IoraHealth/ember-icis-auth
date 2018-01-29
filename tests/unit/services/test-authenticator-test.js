@@ -1,18 +1,13 @@
 /* jshint expr:true */
 import { expect } from 'chai';
-import {
-  describeModule,
-  it
-} from 'ember-mocha';
+import { it, describe } from 'mocha';
+import { setupTest } from 'ember-mocha';
 
-describeModule(
-  'service:test-authenticator',
-  'TestAuthenticatorService',
-  {
+describe('TestAuthenticatorService', function() {
+  setupTest('service:test-authenticator', {
     // Specify the other units that are required for this test.
     // needs: ['service:foo']
-  },
-  function() {
+  });
 
   it('#authenticate returns a deferred object which always resolves', function(done) {
     var authenticator = this.subject();
