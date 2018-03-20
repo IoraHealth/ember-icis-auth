@@ -53,6 +53,7 @@
     "ember-oauth2": "https://github.com/amkirwan/ember-oauth2.git#c01e2cacacde8f04cc6f2f78a8826d54d705ff06"
   },
   "ember-addon": {
-    "configPath": "tests/dummy/config"
+    "configPath": "tests/dummy/config",
+    "after": "ember-cli-shims"
   }
 }
