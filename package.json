@@ -49,7 +49,7 @@
   ],
   "dependencies": {
     "active-model-adapter": "^2.0.3",
-    "ember-cli-babel": "^6.6.0",
+    "ember-cli-babel": "~6.8.0",
     "ember-oauth2": "https://github.com/amkirwan/ember-oauth2.git#c01e2cacacde8f04cc6f2f78a8826d54d705ff06"
   },
   "ember-addon": {
