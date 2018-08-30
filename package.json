@@ -49,8 +49,8 @@
   ],
   "dependencies": {
     "active-model-adapter": "^2.0.3",
-    "ember-cli-babel": "~6.8.0",
-    "ember-oauth2": "https://github.com/amkirwan/ember-oauth2.git#c01e2cacacde8f04cc6f2f78a8826d54d705ff06"
+    "ember-cli-babel": "^6.17.0",
+    "ember-oauth2": "https://github.com/maxfierke/ember-oauth2.git#1349639ccf043731c7aae6cb3e6f0388bf0dd59c"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config",
